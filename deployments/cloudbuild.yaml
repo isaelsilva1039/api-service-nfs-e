@@ -1,0 +1,28 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/wi-portal-parcerias-api:$COMMIT_SHA', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/wi-portal-parcerias-api:$COMMIT_SHA']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - 'run'
+  - 'deploy'
+  - 'wi-portal-parcerias-api'
+  - '--image'
+  - 'gcr.io/$PROJECT_ID/wi-portal-parcerias-api:$COMMIT_SHA'
+  - '--region'
+  - 'us-east1'
+  - '--min-instances'
+  - '1'
+  - '--service-account=wi-portal-parcerias-api-sa@$PROJECT_ID.iam.gserviceaccount.com'
+  - '--set-cloudsql-instances'
+  - 'syscte:us-central1:erp-gestao'
+  - '--set-env-vars=DB_INSTANCE_CONNECTION_NAME=syscte:us-central1:erp-gestao'
+  - '--set-secrets=DB_NAME=DB_NAME_PORTAL_PARCERIAS:latest'
+  - '--set-secrets=DB_USER=DB_USER_PORTAL_PARCERIAS:latest'
+  - '--set-secrets=DB_PASS=DB_PASS_PORTAL_PARCERIAS:latest'
+images:
+- 'gcr.io/$PROJECT_ID/wi-portal-parcerias-api:$COMMIT_SHA'
+options:
+  logging: CLOUD_LOGGING_ONLY
